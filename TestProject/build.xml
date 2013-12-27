@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="TestProject" default="build" basedir=".">
+	<property name="src.dir" value="src"/>
+    <property name="web.dir" value="war"/>
+    <property name="build.dir" value="${web.dir}/WEB-INF/classes"/>
+    <property name="name" value="testproject"/>
+  <!-- Define gwt.home, gwt.dev.jar, appengine.sdk.home -->
+  <property file="build.properties"/>
+
+  <path id="project.class.path">
+    <pathelement location="war/WEB-INF/classes"/>
+    <pathelement location="${gwt.home}/gwt-user.jar"/>
+    <!-- Add any additional non-server libs (such as JUnit) -->
+    <fileset dir="war/WEB-INF/lib">
+      <include name="**/*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="libs" description="Copy libs to WEB-INF/lib">
+    <mkdir dir="war/WEB-INF/lib" />
+    <copy todir="war/WEB-INF/lib" file="${gwt.home}/gwt-servlet.jar" />
+    <!-- Add any additional server libs that need to be copied -->
+    <copy todir="war/WEB-INF/lib" flatten="true">
+      <fileset dir="war/WEB-INF/lib/">
+        <include name="**/*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="javac" depends="libs" description="Compile java source">
+    <mkdir dir="war/WEB-INF/classes"/>
+    <javac srcdir="src" includes="**" encoding="utf-8"
+        destdir="war/WEB-INF/classes"
+        source="1.5" target="1.5" nowarn="true"
+        debug="true" debuglevel="lines,vars,source">
+      <classpath refid="project.class.path"/>
+    </javac>
+  </target>
+
+  <!-- can add additional arguments like -logLevel INFO or -style PRETTY -->
+  <target name="gwtc" depends="javac" description="GWT compile to JavaScript">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement location="src"/>
+        <path refid="project.class.path"/>
+        <pathelement location="${gwt.home}/${gwt.dev.jar}"/>
+      </classpath>
+      <!-- add jvmarg -Xss16M or similar if you see a StackOverflowError -->
+      <jvmarg value="-Xmx256M"/>
+      <arg value="com.sample.testproject.TestProject"/>
+    </java>
+  </target>
+
+  <target name="hosted" depends="javac" description="Run hosted mode">
+    <java failonerror="true" fork="true" classname="com.google.gwt.dev.HostedMode">
+      <classpath>
+        <pathelement location="src"/>
+        <path refid="project.class.path"/>
+        <pathelement location="${gwt.home}/${gwt.dev.jar}"/>
+      </classpath>
+      <jvmarg value="-Xmx256M"/>
+      <arg value="-startupUrl"/>
+      <arg value="TestProject.html"/>
+      <arg value="com.sample.testproject.TestProject"/>
+      <!-- Additional arguments like -style PRETTY or -logLevel DEBUG -->
+    </java>
+  </target>
+
+  <target name="build" depends="gwtc" description="Build this project" />
+
+  <target name="clean" description="Cleans this project">
+    <delete dir="war/WEB-INF/classes" failonerror="false" />
+    <delete dir="war/testproject" failonerror="false" />
+  </target>
+  
+  <target name="build-war" depends="build" description="Create a war file">
+      <mkdir dir="war/WEB-INF/WebContent"/>
+   <war destfile="testproject.war" webxml="war/WEB-INF/web.xml">
+   <fileset dir="war/WEB-INF/WebContent">
+      <include name="**/*.*"/>
+   </fileset>
+      <classes dir="${build.dir}"/>
+</war>
+</target>
+
+</project>

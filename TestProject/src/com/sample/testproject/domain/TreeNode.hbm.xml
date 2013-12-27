@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="com.sample.testproject.client.TreeNode" table="TREENODE">
+    <id name="id" column="NODE_ID">
+      <generator class="native>"/>
+    </id>
+    <property name="name"/>
+	<set name="leafs" table="NODE_LEAF" lazy="true">
+      <key column="NODE_ID"/>
+      <many-to-many column="LEAF_ID" class="com.google.musicstore.domain.TreeLeaf"/>
+    </set>
+  </class>
+</hibernate-mapping>
